@@ -1,0 +1,9 @@
+async-lru==1.0.2
+async-timeout==3.0.1
+discord.py==1.7.1
+Pillow==8.2.0
+pyowm==3.2.0
+requests==2.25.1
+pyttsx3==2.90
+geojson==2.5.0
+urllib3==1.26.4
