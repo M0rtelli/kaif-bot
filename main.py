@@ -469,8 +469,8 @@ async def card_user(ctx, member: discord.Member = None):
 		nick = ctx.message.author.display_name
 		tag = ctx.author.discriminator 
 
-		headline = ImageFont.truetype('/bahnschrift.ttf', size = 45)
-		exp_lvl = ImageFont.truetype('/malgun.ttf', size = 33)
+		headline = ImageFont.truetype('bahnschrift.ttf', size = 45)
+		exp_lvl = ImageFont.truetype('malgun.ttf', size = 33)
 		
 
 
