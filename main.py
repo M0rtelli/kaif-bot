@@ -2,7 +2,6 @@ import discord
 from random import randint, choice
 from discord.ext import commands
 import datetime, pyowm
-#import speech_recognition as sr
 from discord.utils import get
 import pyttsx3
 import os
