@@ -731,4 +731,5 @@ async def __mute(ctx, member: discord.Member = None, amount_time = None, *, reas
 
 
 # Get token
-client.run('ODM2NjQzMDc5MjE2ODI0MzIw.YIg-lg.3jDUHpfeZMYza7JE61MjBbit7DM')
+token = os.environ['TOKEN']
+client.run(token)
