@@ -505,8 +505,8 @@ async def card_user(ctx, member: discord.Member = None):
 		await ctx.send(file = discord.File(fp = buf, filename = 'image.png'))
 		#await ctx.send('check')
 	else:
-				await ctx.channel.purge(limit = 1)
-		img = Image.open(requests.get('http://i.yapx.ru/NRwBi.png', stream=True).raw) # загружаем картинку в память
+		await ctx.channel.purge(limit = 1)
+		img = Image.open(requests.get('http://i.yapx.ru/NRwBi.png', stream=True).raw) 
 
 		url = str(ctx.author.avatar_url)[:-10] 										  # получаем url аватарки
 		response = requests.get(url, stream = True)									  # получаем аватарку
@@ -515,7 +515,7 @@ async def card_user(ctx, member: discord.Member = None):
 		response = response.resize((170, 170))									
 		img.paste(response, (40, 15))												  # вставляем аватарку в фотку
 
-		imagg =Image.open(urlopen('http://i.yapx.ru/NRwBE.png')).convert('RGBA')	  # получаем рамку
+		imagg =Image.open(urlopen('http://i.yapx.ru/NRwBE.png')).convert('RGBA')	  
 		imagg =imagg.resize((900,200))												  # ебем рамку по размерам
 
 		idraw = ImageDraw.Draw(img)													  # чото делаем
@@ -714,7 +714,8 @@ async def __mute(ctx, member: discord.Member = None, amount_time = None, *, reas
 			await member.remove_roles(mute_role)
 
 			await ctx.send(embed = discord.Embed(
-				description = f'''**[{member.mention}]** Время мута истекло, вы были размучены''',
+				description = f'''**[{member.mention}]** Время мут
+а истекло, вы были размучены''',
 				color = 0x2F3136
 			))	
 		else:
@@ -741,4 +742,6 @@ async def __mute(ctx, member: discord.Member = None, amount_time = None, *, reas
 
 
 # Get token
-client.run(os.environ('TOKEN'), bot=True, reconnect=True)
+import keep_alive
+keep_alive.keep_alive()
+client.run(os.environ['TOKEN'], bot=True, reconnect=True)
