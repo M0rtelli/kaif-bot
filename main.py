@@ -2,6 +2,7 @@ import discord
 from random import randint, choice
 from discord.ext import commands
 import datetime, pyowm
+#import speech_recognition as sr
 from discord.utils import get
 import pyttsx3
 import os
@@ -12,6 +13,9 @@ from PIL import Image, ImageFont, ImageDraw
 import io
 import asyncio
 import json
+import sqlite3
+
+# Загрузи его на Replit
 
 nickrole = 'g'
 PREFIX = '.'
@@ -468,8 +472,8 @@ async def card_user(ctx, member: discord.Member = None):
 		nick = ctx.message.author.display_name
 		tag = ctx.author.discriminator 
 
-		headline = ImageFont.truetype('bahnschrift.ttf', size = 45)
-		exp_lvl = ImageFont.truetype('malgun.ttf', size = 33)
+		headline = ImageFont.truetype('bahnschrift.ttf', size = 37)
+		exp_lvl = ImageFont.truetype('malgun.ttf', size = 27)
 		
 
 
@@ -481,12 +485,12 @@ async def card_user(ctx, member: discord.Member = None):
 		exp_need = lvl*2
 		textr = f'{lvl} ({exp}/{exp_need} exp)'
 		lentex = len(textr)
-		#print(lentex)
+
 		xya = (607, 75)
 		if lentex >= 17:															  # делаем красоту
-			xya = (560, 75)
+			xya = (600, 75)
 		elif lentex <= 13:
-			xya = (643, 75)
+			xya = (700, 75)
 		idraw.text(xya, f'{lvl} lvl ({exp}/{exp_need} exp)', font = exp_lvl)
 		idraw.text((260, 75), f'{nick}#{tag}', font = headline) 
 		color=(98,211,245,175)
@@ -501,49 +505,56 @@ async def card_user(ctx, member: discord.Member = None):
 		await ctx.send(file = discord.File(fp = buf, filename = 'image.png'))
 		#await ctx.send('check')
 	else:
-		await ctx.channel.purge(limit = 1)
+				await ctx.channel.purge(limit = 1)
 		img = Image.open(requests.get('http://i.yapx.ru/NRwBi.png', stream=True).raw) # загружаем картинку в память
-		#img = Image.new('RGBA', (300, 100), imgr)
-		url = str(member.avatar_url)[:-10]
 
-		response = requests.get(url, stream = True)
-		response = Image.open(io.BytesIO(response.content))
-		response = response.convert('RGBA')
-		response = response.resize((170, 170))
+		url = str(ctx.author.avatar_url)[:-10] 										  # получаем url аватарки
+		response = requests.get(url, stream = True)									  # получаем аватарку
+		response = Image.open(io.BytesIO(response.content))							  # ебем аватарку по размерам и формату
+		response = response.convert('RGBA')											  
+		response = response.resize((170, 170))									
+		img.paste(response, (40, 15))												  # вставляем аватарку в фотку
 
-		img.paste(response, (40, 15))
+		imagg =Image.open(urlopen('http://i.yapx.ru/NRwBE.png')).convert('RGBA')	  # получаем рамку
+		imagg =imagg.resize((900,200))												  # ебем рамку по размерам
 
-		idraw = ImageDraw.Draw(img)
+		idraw = ImageDraw.Draw(img)													  # чото делаем
+		name = ctx.author.name														  # ники, теги и шрифты
+		nick = ctx.message.author.display_name
+		tag = ctx.author.discriminator 
 
-		name = member.name # Fsoky
-		nick = member.display_name
-		tag = member.discriminator # 9610
-		font = ImageFont.load_default().font
-		headline = ImageFont.truetype('bahnschrift.ttf', size = 45)
-		exp_lvl = ImageFont.truetype('malgun.ttf', size = 33)		
-		with open('lvl.json','r') as f:
+		headline = ImageFont.truetype('bahnschrift.ttf', size = 37)
+		exp_lvl = ImageFont.truetype('malgun.ttf', size = 27)
+		
+
+
+		with open('lvl.json','r') as f:											 	  # получаем лвл и экспу
 			users = json.load(f)
-		user = str(member.id)
+		user = str(ctx.author.id)
 		exp = users[user]['exp']
 		lvl = users[user]['lvl']
 		exp_need = lvl*2
+		textr = f'{lvl} ({exp}/{exp_need} exp)'
+		lentex = len(textr)
+		#print(lentex)
 		xya = (607, 75)
-		if lentex >= 18:
-			xya = (560, 75)
+		if lentex >= 17:															  # делаем красоту
+			xya = (600, 75)
 		elif lentex <= 13:
-			xya = (643, 75)
-		idraw.text(xya, f'{lvl} lvl ({exp}/{exp_need} exp)', font = exp_lvl) # Fsoky#9610
-		idraw.text((260, 75), f'{nick}#{tag}', font = headline) # Fsoky#9610
-		draw = ImageDraw.Draw(img)
+			xya = (700, 75)
+		idraw.text(xya, f'{lvl} lvl ({exp}/{exp_need} exp)', font = exp_lvl)
+		idraw.text((260, 75), f'{nick}#{tag}', font = headline) 
 		color=(98,211,245,175)
-		x, y, diam = 260, 136, 40
-		#idraw.ellipse([x,y,x+diam,y+diam], fill=(98,211,245,175))
-		#ImageDraw.floodfill(img, xy=(310,140), value=color, thresh=100)
-		draw_progress(img, 50)
-		cart = f"Карточку запросил - {ctx.message.author.mention}"
-		img.save('user_card.png')
-		embed = discord.Embed(title = f'kaif zone :gem:',description = cart, color = member.color)
-		await ctx.send(file = discord.File(fp = 'user_card.png'), embed = embed)
+		exp = int(exp)
+		exp_need = int(exp_need)
+		per = (exp/exp_need)*100
+		img = draw_progress(img, per)											     # рисуем полоску, склеиваем и отправляем
+		img.paste(imagg, (0,0), mask=imagg)															
+		buf = io.BytesIO()
+		img.save(buf, 'PNG')
+		buf.seek(0)
+		embed = discord.Embed(title = f'kaif zone :gem:',description = f"Карточку запросил - {ctx.message.author.mention}", color = member.color)
+		await ctx.send(file = discord.File(fp = buf, filename = 'image.png'), embed = embed)
 
 
 @client.command() #me — карточка в тексте
@@ -647,7 +658,7 @@ async def __mute(ctx, member: discord.Member = None, amount_time = None, *, reas
 			await ctx.channel.purge( limit = 1 )
 			await ctx.send(embed = discord.Embed(
 				description = f'''**[{member.mention}]** Вы были замучены на **{amount_time}**.
-				**Выдал мут:** {ctx.author}
+				**Выдал мут:** {ctx.author.mention}
 				```css
 Причина: [{reason}]
 				```
@@ -668,7 +679,7 @@ async def __mute(ctx, member: discord.Member = None, amount_time = None, *, reas
 			await ctx.channel.purge( limit = 1 )
 			await ctx.send(embed = discord.Embed(
 				description = f'''**[{member.mention}]** Вы были замучены на **{amount_time}**.
-				**Выдал мут:** {ctx.author}
+				**Выдал мут:** {ctx.author.mention}
 				```css
 Причина: [{reason}]
 				```
@@ -689,7 +700,7 @@ async def __mute(ctx, member: discord.Member = None, amount_time = None, *, reas
 			await ctx.channel.purge( limit = 1 )
 			await ctx.send(embed = discord.Embed(
 				description = f'''**[{member.mention}]** Вы были замучены на **{amount_time}**.
-				**Выдал мут:** {ctx.author}
+				**Выдал мут:** {ctx.author.mention}
 				```css
 Причина: [{reason}]
 				```
@@ -710,7 +721,7 @@ async def __mute(ctx, member: discord.Member = None, amount_time = None, *, reas
 			await ctx.channel.purge( limit = 1 )
 			await ctx.send(embed = discord.Embed(
 				description = f'''**[{member.mention}]** Вы были замучены на **{amount_time}s**.
-				**Выдал мут:** {ctx.author}
+				**Выдал мут:** {ctx.author.mention}
 				```css
 Причина: [{reason}]
 				```
@@ -730,5 +741,4 @@ async def __mute(ctx, member: discord.Member = None, amount_time = None, *, reas
 
 
 # Get token
-token = os.environ['TOKEN']
-client.run(token)
+client.run('ODM2NjQzMDc5MjE2ODI0MzIw.YIg-lg.AR95OM9vn6myEOtK_QBSvwmGM5s')
